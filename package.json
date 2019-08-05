@@ -1,0 +1,22 @@
+{
+  "name": "mindless-notes",
+  "version": "0.0.1",
+  "description": "A minimalist note-taking application with no organization.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hendersonreed/mindless-notes"
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "author": "Henderson Hummel",
+  "license": "GPL V2"
+}
