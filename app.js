@@ -9,8 +9,9 @@ const server = express();
 server.use(parser.urlencoded({
 	extended: true
 }));
+server.use('/resources', express.static(__dirname + '/resources'));
 
-var globalData = '';
+var globalData = [];
 
 /**
  * the main page of the application, where all users land.
@@ -32,12 +33,10 @@ server.get('/', function(req, res) {
 server.post('/new', function(req, res) {
 	var post = req.body;
 
-	if (globalData == '') {
-		globalData = post['note-title'] + ':' + post['note-body'];
-	}
-	else {
-		globalData += '\n' + post['note-title'] + ':' + post['note-body'];
-	}
+	globalData.push({
+		title:post['note-title'],
+		body:post['note-body']
+	});
 
 	res.status(302)
 	res.set({"Content-Type":"text/plain"});
@@ -56,19 +55,19 @@ server.get('/notes', function(req, res) {
 	// for testing before I get a real database working with this.
 	var pageFragment = fs.readFileSync('resources/fragment.html', 'utf8');
 
-	var notes = globalData.split('\n');
-	var noteLen = notes.length;
+	var dataLen = globalData.length;
 	var addFragment = '';
 
-	for(var i = 0; i < noteLen && i < 50; i++) {
-		addFragment += '<div class="card-body border border-primary rounded">\n'
-		addFragment += '<h2>' + notes[i].split(':')[0] + '</h2>\n'
-		addFragment += '<p>' + notes[i].split(':')[1] + '</p>\n'
-		addFragment += '</div>';
+	for(var i = 0; i < dataLen && i < 50; i++) {
+		addFragment += '\t\t<div class="card-body border border-primary rounded">\n'
+		addFragment += '\t\t\t<h2>' + globalData[i]['title'] + '</h2>\n'
+		addFragment += '\t\t\t<p>' + globalData[i]['body'] + '</p>\n'
+		addFragment += '\t\t</div>\n';
 		pageFragment += addFragment;
+		addFragment = '';
 	}
 
-	pageFragment += '</div></div></div></body></html>'
+	pageFragment += '\t\</div>\n\t</body>\n</html>'
 
 	res.status(200)
 	res.set({"Content-Type":"text/html"});
