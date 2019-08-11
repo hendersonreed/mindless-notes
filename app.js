@@ -3,12 +3,17 @@
 const express = require('express'); // do not change this line
 const parser = require('body-parser'); // do not change this line
 const fs = require('fs');
-//const {Datastore} = requre('@googlecloud/datastore'); 
+const { Datastore } = require('@google-cloud/datastore'); 
 
 const server = express();
+const datastore = new Datastore({
+	projectId: 'mindless-notes'
+});
+
 server.use(parser.urlencoded({
 	extended: true
 }));
+
 server.use('/resources', express.static(__dirname + '/resources'));
 
 var globalData = [];
@@ -32,11 +37,21 @@ server.get('/', function(req, res) {
  */
 server.post('/new', function(req, res) {
 	var post = req.body;
+	var date = new Date();
+	var time = date.getTime();
+	const key = datastore.key(['note', post['note-title']]);
 
-	globalData.push({
-		title:post['note-title'],
-		body:post['note-body']
+	const data = {
+		title: post['note-title'],
+		body: post['note-body'],
+		time: time
+	}
+
+	datastore.save({
+	  key: key,
+	  data: data
 	});
+
 
 	res.status(302)
 	res.set({"Content-Type":"text/plain"});
@@ -50,28 +65,32 @@ server.post('/new', function(req, res) {
 server.get('/notes', function(req, res) {
 	//thinking - load part of a page here into a string, and then append cards
 	// containing notes to the string, and then close off the page before sending it.
-	//
-	// ok this definitely doesn't work. but that doesn't really matter, since it's just
-	// for testing before I get a real database working with this.
+	const query = datastore.createQuery(['note']).limit(100).order('time', { descending: true });
 	var pageFragment = fs.readFileSync('resources/fragment.html', 'utf8');
 
-	var dataLen = globalData.length;
-	var addFragment = '';
+	datastore.runQuery(query, function(err, entities, nextQuery) {
+		if (err) {
+		  console.log(err);
+		  return;
+		}
+		var dataLen = entities.length;
+		var addFragment = '';
 
-	for(var i = 0; i < dataLen && i < 50; i++) {
-		addFragment += '\t\t<div class="card-body border border-primary rounded">\n'
-		addFragment += '\t\t\t<h2>' + globalData[i]['title'] + '</h2>\n'
-		addFragment += '\t\t\t<p>' + globalData[i]['body'] + '</p>\n'
-		addFragment += '\t\t</div>\n';
-		pageFragment += addFragment;
-		addFragment = '';
-	}
+		for(var i = 0; i < dataLen; i++) {
+			addFragment += '\t\t<div class="card-body border border-primary rounded">\n'
+			addFragment += '\t\t\t<h2>' + entities[i]['title'] + '</h2>\n'
+			addFragment += '\t\t\t<p>' + entities[i]['body'].substring(0,50) + '</p>\n'
+			addFragment += '\t\t</div>\n';
+			pageFragment += addFragment;
+			addFragment = '';
+		}
 
-	pageFragment += '\t\</div>\n\t</body>\n</html>'
+		pageFragment += '\t\</div>\n\t</body>\n</html>'
 
-	res.status(200)
-	res.set({"Content-Type":"text/html"});
-	res.send(pageFragment);
+		res.status(200)
+		res.set({"Content-Type":"text/html"});
+		res.send(pageFragment);
+		});
 });
 
 /**
