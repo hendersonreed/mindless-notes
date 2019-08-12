@@ -97,8 +97,10 @@ server.get('/notes', function(req, res) {
  * This has a parameter as well as a query string, and should query the 
  * database for said string.
  */
-server.get('/notes/search/:parameters', function(req, res) {
-	res.send("placeholder");
+server.get('/search/:parameters', function(req, res) {
+	var search_query = decodeURI(req.params['parameters']);
+	res.set({"Content-Type":"text/html"});
+	res.send(search_query);
 });
 
 /**
