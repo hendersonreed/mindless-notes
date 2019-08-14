@@ -98,9 +98,50 @@ server.get('/notes', function(req, res) {
  * database for said string.
  */
 server.get('/search/:parameters', function(req, res) {
+
+	console.log("entered the search callback");
+
 	var search_query = decodeURI(req.params['parameters']);
-	res.set({"Content-Type":"text/html"});
-	res.send(search_query);
+	var pageFragment = fs.readFileSync('resources/fragment.html', 'utf8');
+
+	const query = datastore.createQuery('note').filter('title', '=', search_query)
+		.limit(100);
+
+	console.log("created the query");
+
+	datastore.runQuery(query, function(err, entities, nextQuery) {
+		if (err) {
+		  return;
+		}
+
+		console.log(entities);
+
+		console.log("ran the query");
+
+		var dataLen = entities.length;
+		var addFragment = '';
+
+		for(var i = 0; i < dataLen; i++) {
+			addFragment += '\t\t<div class="card-body border border-primary rounded">\n'
+			addFragment += '\t\t\t<h2>' + entities[i]['title'] + '</h2>\n'
+			addFragment += '\t\t\t<p>' + entities[i]['body'] + '</p>\n'
+			addFragment += '\t\t</div>\n';
+			pageFragment += addFragment;
+			addFragment = '';
+		}
+
+		if(dataLen == 0) {
+			pageFragment += '<div class="card-body border border-primary rounded"><p>no results found</p></div>\n'
+		}
+
+		pageFragment += '\t\</div>\n\t</body>\n</html>';
+
+		console.log("finished creating page");
+
+		res.status(200)
+		res.set({"Content-Type":"text/html"});
+		res.send(pageFragment);
+		});
 });
 
 /**

@@ -19,13 +19,19 @@
 			  <li class="nav-item">
 				<a class="nav-link" href="notes">my notes</a>
 			  </li>
-			  <!--
 			  <li class="nav-item">
-				  <a class="nav-link" href="#">username</a>
+				  <input id="search-bar" type="text">
+				  <button id="search-notes" class="btn btn-primary">search notes</button>
+	<script>
+		$('#search-notes').on('click', function() {
+			var search_query = $('#search-bar').val();
+			if(search_query == "") return;
+			var final_url = "/search/" + encodeURI(search_query);
+			window.location.href = final_url;
+		});
+	</script>
 			  </li>
-			  -->
 			</ul>
-		  </div>
 		</nav>
 		<div id="note-box" class="container">
 			<div class="card bg-light">
