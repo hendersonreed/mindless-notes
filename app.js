@@ -80,7 +80,7 @@ server.get('/notes', function(req, res) {
 		for(var i = 0; i < dataLen; i++) {
 			addFragment += '\t\t<div class="card-body border border-primary rounded">\n'
 			addFragment += '\t\t\t<h2>' + entities[i]['title'] + '</h2>\n'
-			addFragment += '\t\t\t<p>' + entities[i]['body'].substring(0,50) + '</p>\n'
+			addFragment += '\t\t\t<p>' + entities[i]['body'] + '</p>\n'
 			addFragment += '\t\t</div>\n';
 			pageFragment += addFragment;
 			addFragment = '';
@@ -138,7 +138,7 @@ server.get('/search/:parameters', function(req, res) {
  * our 404 page. says "not all who wander are lost. Don't you think is might be a little more than wandering though?"
  */
 server.get('*', function(req, res) {
-	var pageFragment = fs.readFileSync('resources/lost.html', 'utf8');
+	var pageFragment = fs.readFileSync('/resources/lost.html', 'utf8');
 	res.status(200)
 	res.set({"Content-Type":"text/html"});
 	res.send(pageFragment);
