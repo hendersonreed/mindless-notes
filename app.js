@@ -24,9 +24,10 @@ var globalData = [];
  * as links to a list of all notes.
  */
 server.get('/', function(req, res) {
-	res.sendFile('resources/main.html', {
-	'root': __dirname
-	});
+	var pageFragment = fs.readFileSync('resources/main.html', 'utf8');
+	res.status(200)
+	res.set({"Content-Type":"text/html"});
+	res.send(pageFragment);
 });
 
 /**
@@ -98,25 +99,16 @@ server.get('/notes', function(req, res) {
  * database for said string.
  */
 server.get('/search/:parameters', function(req, res) {
-
-	console.log("entered the search callback");
-
 	var search_query = decodeURI(req.params['parameters']);
 	var pageFragment = fs.readFileSync('resources/fragment.html', 'utf8');
 
 	const query = datastore.createQuery('note').filter('title', '=', search_query)
 		.limit(100);
 
-	console.log("created the query");
-
 	datastore.runQuery(query, function(err, entities, nextQuery) {
 		if (err) {
 		  return;
 		}
-
-		console.log(entities);
-
-		console.log("ran the query");
 
 		var dataLen = entities.length;
 		var addFragment = '';
@@ -136,8 +128,6 @@ server.get('/search/:parameters', function(req, res) {
 
 		pageFragment += '\t\</div>\n\t</body>\n</html>';
 
-		console.log("finished creating page");
-
 		res.status(200)
 		res.set({"Content-Type":"text/html"});
 		res.send(pageFragment);
@@ -148,9 +138,10 @@ server.get('/search/:parameters', function(req, res) {
  * our 404 page. says "not all who wander are lost. Don't you think is might be a little more than wandering though?"
  */
 server.get('*', function(req, res) {
-	res.sendFile('resources/lost.html', {
-		'root': __dirname
-	});
+	var pageFragment = fs.readFileSync('resources/lost.html', 'utf8');
+	res.status(200)
+	res.set({"Content-Type":"text/html"});
+	res.send(pageFragment);
 });
 
 server.listen(process.env.PORT || 8080);
